@@ -16,4 +16,9 @@
     <string name="error_username_too_long">Username canʼt be longer than 20 characters.</string>
     <string name="error_password_needs_number_or_symbol">Password must be at least 8 characters and include a number or symbol</string>
     <string name="error_passwords_dont_match">Passwords do not match</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="username_support_text">Use between 3 and 20 characters for your username.</string>
+    <string name="email_support_text">Use 8+ characters with a number or symbol for better security.</string>
+    <string name="login_success">Login success</string>
+    <string name="login_failed">Login failed</string>
 </resources>

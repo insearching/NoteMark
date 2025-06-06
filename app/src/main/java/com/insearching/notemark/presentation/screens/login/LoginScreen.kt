@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.insearching.notemark.R
 import com.insearching.notemark.core.ScreenSizesPreview
+import com.insearching.notemark.core.extension.applyIf
 import com.insearching.notemark.presentation.components.NoteMarkClickableText
 import com.insearching.notemark.presentation.components.NoteMarkPrimaryButton
 import com.insearching.notemark.presentation.components.NoteMarkTextField
@@ -40,6 +43,7 @@ fun LoginScreenRoot(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = koinViewModel<LoginViewModel>(),
     onCreateNewAccount: () -> Unit,
+    onLoginSuccess: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -49,8 +53,15 @@ fun LoginScreenRoot(
         viewModel.events.collect { event ->
             when (event) {
                 LoginEvent.OnCreateNewAccount -> onCreateNewAccount()
-                LoginEvent.OnLogin -> {
-                    Toast.makeText(context, "Login success", Toast.LENGTH_SHORT).show()
+                LoginEvent.OnLoginSuccess -> {
+                    Toast.makeText(context,
+                        context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                    onLoginSuccess()
+                }
+
+                LoginEvent.OnLoginFailed -> {
+                    Toast.makeText(context,
+                        context.getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -83,12 +94,12 @@ fun LoginScreen(
                     onAction = onAction
                 )
 
-                ScreenOrientation.TabletPortrait -> TabletPortraitLoginScreen(
+                ScreenOrientation.Landscape -> LandscapeLoginScreen(
                     state = state,
-                    onAction = onAction
+                    onAction = onAction,
                 )
 
-                ScreenOrientation.Landscape -> LandscapeLoginScreen(
+                ScreenOrientation.TabletPortrait -> TabletPortraitLoginScreen(
                     state = state,
                     onAction = onAction
                 )
@@ -141,7 +152,8 @@ private fun LandscapeLoginScreen(
         LoginForm(
             modifier = Modifier.weight(1f),
             state = state,
-            onAction = onAction
+            onAction = onAction,
+            scrollable = true
         )
     }
 }
@@ -201,9 +213,15 @@ private fun LoginForm(
     modifier: Modifier = Modifier,
     state: LoginViewState,
     onAction: (LoginAction) -> Unit,
+    scrollable: Boolean = false,
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .applyIf(scrollable) {
+                verticalScroll(scrollState)
+            },
         verticalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -226,6 +244,7 @@ private fun LoginForm(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.login),
             enabled = state.loginEnabled,
+            isLoading = state.isLoading,
             onClick = { onAction(LoginAction.OnLogin) },
         )
         Spacer(modifier = Modifier.height(NoteMarkTheme.offset.medium))

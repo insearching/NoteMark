@@ -1,5 +1,6 @@
 package com.insearching.notemark.presentation.screens.register
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,12 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.insearching.notemark.R
 import com.insearching.notemark.core.ScreenSizesPreview
+import com.insearching.notemark.core.extension.applyIf
 import com.insearching.notemark.presentation.components.NoteMarkClickableText
 import com.insearching.notemark.presentation.components.NoteMarkPrimaryButton
 import com.insearching.notemark.presentation.components.NoteMarkTextField
@@ -33,27 +41,43 @@ import com.insearching.notemark.ui.theme.NoteMarkTheme
 import com.insearching.notemark.ui.theme.ScreenOrientation
 import org.koin.androidx.compose.koinViewModel
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun RegisterScreenRoot(
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = koinViewModel<RegisterViewModel>(),
     onLoginClick: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val actionLabel = stringResource(R.string.dismiss)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 RegisterEvent.OnLoginEvent -> onLoginClick()
+                RegisterEvent.OnRegisterSuccess -> onLoginClick()
+                is RegisterEvent.OnRegisterFailed -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = actionLabel,
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }
         }
     }
 
-    RegisterScreen(
-        modifier = modifier,
-        state = state,
-        onAction = viewModel::onAction
-    )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) {
+        RegisterScreen(
+            modifier = modifier,
+            state = state,
+            onAction = viewModel::onAction
+        )
+    }
 }
 
 @Composable
@@ -134,7 +158,8 @@ private fun LandscapeRegisterScreen(
         RegisterForm(
             modifier = Modifier.weight(1f),
             state = state,
-            onAction = onAction
+            onAction = onAction,
+            scrollable = true
         )
     }
 }
@@ -193,9 +218,15 @@ private fun RegisterForm(
     modifier: Modifier = Modifier,
     state: RegisterViewState,
     onAction: (RegisterAction) -> Unit,
+    scrollable: Boolean = false,
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .applyIf(scrollable) {
+                verticalScroll(scrollState)
+            },
         verticalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -204,8 +235,8 @@ private fun RegisterForm(
             value = state.username.value,
             label = stringResource(R.string.username),
             placeholder = "John.doe",
-            supportingText = state.username.error?.asString() ?: "",
-            isError = state.username.error != null,
+            supportText = stringResource(R.string.username_support_text),
+            errorText = state.username.error?.asString(),
             onValueChange = { onAction(RegisterAction.OnUserNameChanged(it)) },
         )
         NoteMarkTextField(
@@ -213,8 +244,8 @@ private fun RegisterForm(
             value = state.email.value,
             label = stringResource(R.string.email),
             placeholder = "john.doe@example.com",
-            supportingText = state.email.error?.asString() ?: "",
-            isError = state.email.error != null,
+            supportText = stringResource(R.string.email_support_text),
+            errorText = state.email.error?.asString(),
             onValueChange = { onAction(RegisterAction.OnEmailChanged(it)) },
         )
         NoteMarkTextField(
@@ -222,8 +253,7 @@ private fun RegisterForm(
             value = state.password.value,
             label = stringResource(R.string.password),
             placeholder = stringResource(R.string.password),
-            supportingText = state.password.error?.asString() ?: "",
-            isError = state.password.error != null,
+            errorText = state.password.error?.asString(),
             isPassword = true,
             onValueChange = { onAction(RegisterAction.OnPassChanged(it)) },
         )
@@ -232,15 +262,14 @@ private fun RegisterForm(
             value = state.repeatPassword.value,
             label = stringResource(R.string.repeat_password),
             placeholder = stringResource(R.string.password),
-            supportingText = state.repeatPassword.error?.asString() ?: "",
-            isError = state.repeatPassword.error != null,
+            errorText = state.repeatPassword.error?.asString(),
             isPassword = true,
             onValueChange = { onAction(RegisterAction.OnPassRepeatChanged(it)) },
         )
         NoteMarkPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.login),
-            enabled = state.loginEnabled,
+            text = stringResource(R.string.create_account),
+            enabled = state.registerEnabled,
             onClick = { onAction(RegisterAction.OnCreateAccount) },
         )
         Spacer(modifier = Modifier.height(NoteMarkTheme.offset.medium))

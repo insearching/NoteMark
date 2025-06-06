@@ -3,6 +3,7 @@ package com.insearching.notemark.domain.usecase
 
 import com.insearching.notemark.R
 import com.insearching.notemark.core.UiText
+import com.insearching.notemark.domain.ValidationResult
 
 class ValidateRepeatPasswordUseCase {
 

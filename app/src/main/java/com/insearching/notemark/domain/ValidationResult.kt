@@ -1,4 +1,4 @@
-package com.insearching.notemark.domain.usecase
+package com.insearching.notemark.domain
 
 import com.insearching.notemark.core.UiText
 

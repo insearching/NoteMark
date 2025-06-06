@@ -11,6 +11,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +35,18 @@ fun NoteMarkTextField(
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
-    supportingText: String = "",
-    isError: Boolean = false,
+    supportText: String? = null,
+    errorText: String? = null,
     isPassword: Boolean = false,
 ) {
     val focusRequester = remember { FocusRequester() }
     var passwordVisible by remember { mutableStateOf(false) }
     var isFocused by remember { mutableStateOf(false) }
+    val isError by remember(errorText, isFocused) {
+        derivedStateOf {
+            errorText?.isBlank() == false && !isFocused
+        }
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -69,18 +75,25 @@ fun NoteMarkTextField(
                 )
             },
             supportingText = {
-                if (supportingText.isNotEmpty() && isFocused) {
+                if (errorText?.isBlank() == false && !isFocused) {
                     Text(
-                        text = supportingText,
+                        text = errorText,
                         style = NoteMarkTheme.typography.bodySmall,
-                        color = if (isError) NoteMarkTheme.color.error else NoteMarkTheme.color.onSurfaceVar
+                        color = NoteMarkTheme.color.error
+                    )
+                } else if (supportText?.isBlank() == false && isFocused) {
+                    Text(
+                        text = supportText,
+                        style = NoteMarkTheme.typography.bodySmall,
+                        color = NoteMarkTheme.color.onSurfaceVar
                     )
                 }
             },
             isError = isError,
             singleLine = true,
             shape = NoteMarkTheme.shape.large,
-            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation('*') else VisualTransformation.None,
+
             trailingIcon = {
                 if (isPassword) {
                     val icon =
@@ -119,7 +132,6 @@ private fun NoteMarkTextFieldPreview() {
             onValueChange = {},
             label = "Label",
             placeholder = "Placeholder",
-            isError = false,
             modifier = Modifier
         )
     }
@@ -133,8 +145,7 @@ private fun NoteMarkTextFieldErrorPreview() {
         onValueChange = {},
         label = "Label",
         placeholder = "Placeholder",
-        supportingText = "Password must be at least 8 characters and include a number or symbol",
-        isError = true,
+        errorText = "Password must be at least 8 characters and include a number or symbol",
         modifier = Modifier
     )
 }
@@ -147,8 +158,7 @@ private fun NoteMarkTextFieldFocusedPreview() {
         value = "",
         onValueChange = {},
         label = "Label",
-        supportingText = "Use 8+ characters with a number or symbol for better security",
+        errorText = "Use 8+ characters with a number or symbol for better security",
         placeholder = "Placeholder",
-        isError = false,
     )
 }

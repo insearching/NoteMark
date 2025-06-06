@@ -7,7 +7,8 @@ data class RegisterViewState(
     val username: FieldInput,
     val password: FieldInput,
     val repeatPassword: FieldInput,
-    val loginEnabled: Boolean,
+    val registerEnabled: Boolean,
+    val isLoading: Boolean,
 ) {
     companion object {
         val Initial = RegisterViewState(
@@ -15,7 +16,8 @@ data class RegisterViewState(
             username = FieldInput("", null),
             password = FieldInput("", null),
             repeatPassword = FieldInput("", null),
-            loginEnabled = false,
+            registerEnabled = false,
+            isLoading = false,
         )
     }
 }

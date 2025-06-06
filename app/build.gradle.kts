@@ -1,8 +1,24 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+}
+
+fun Project.loadProperties(fileName: String): Properties {
+    val properties = Properties()
+    val sentryPropertiesFile = rootProject.file(fileName)
+
+    if (sentryPropertiesFile.exists()) {
+        FileInputStream(sentryPropertiesFile).use { input ->
+            properties.load(input)
+        }
+    }
+
+    return properties
 }
 
 android {
@@ -15,6 +31,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        val properties = project.loadProperties("local.properties")
+        val deepGramApiKey: String = properties.getProperty("X-USER-EMAIL")
+        buildConfigField("String", "X_USER_EMAIL", deepGramApiKey)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +56,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -54,9 +75,11 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.bundles.koin)
+    implementation(libs.bundles.ktor)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.adaptive.android)
+    implementation(libs.timber)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
