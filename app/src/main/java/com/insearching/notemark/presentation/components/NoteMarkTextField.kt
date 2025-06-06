@@ -99,7 +99,7 @@ fun NoteMarkTextField(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color.Transparent,
                 unfocusedContainerColor = NoteMarkTheme.color.surface,
-                focusedBorderColor = NoteMarkTheme.color.onSurfaceVar,
+                focusedBorderColor = NoteMarkTheme.color.primary,
                 focusedContainerColor = Color.Transparent,
                 focusedTextColor = NoteMarkTheme.color.onSurfaceVar,
                 errorBorderColor = NoteMarkTheme.color.error,

@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 )
 @Preview(
     group = "Screen Size",
-    name = "Phone",
+    name = "Phone Landscape",
     device = "spec:parent=pixel_8,orientation=landscape",
     showBackground = true
 )

@@ -1,5 +1,6 @@
 package com.insearching.notemark.presentation.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -22,6 +23,7 @@ fun NoteMarkController(
     ) {
         composable<Route.LandingScreen> {
             LandingScreen(
+                modifier = modifier.fillMaxSize(),
                 onGetStartedClick = {
                     controller.navigate(Route.RegisterScreen)
                 },
