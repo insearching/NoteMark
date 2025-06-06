@@ -1,0 +1,263 @@
+package com.insearching.notemark.presentation.screens.register
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.insearching.notemark.R
+import com.insearching.notemark.core.ScreenSizesPreview
+import com.insearching.notemark.presentation.components.NoteMarkClickableText
+import com.insearching.notemark.presentation.components.NoteMarkPrimaryButton
+import com.insearching.notemark.presentation.components.NoteMarkTextField
+import com.insearching.notemark.ui.theme.LocalScreenOrientation
+import com.insearching.notemark.ui.theme.NoteMarkTheme
+import com.insearching.notemark.ui.theme.ScreenOrientation
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun RegisterScreenRoot(
+    modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel = koinViewModel<RegisterViewModel>(),
+    onLoginClick: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                RegisterEvent.OnLoginEvent -> onLoginClick()
+            }
+        }
+    }
+
+    RegisterScreen(
+        modifier = modifier,
+        state = state,
+        onAction = viewModel::onAction
+    )
+}
+
+@Composable
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    state: RegisterViewState,
+    onAction: (RegisterAction) -> Unit,
+) {
+    Scaffold(
+        modifier = modifier
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .background(NoteMarkTheme.color.primary)
+                .padding(top = innerPadding.calculateTopPadding())
+        ) {
+            when (LocalScreenOrientation.current) {
+                ScreenOrientation.PhonePortrait -> PhonePortraitRegisterScreen(
+                    state = state,
+                    onAction = onAction
+                )
+
+                ScreenOrientation.TabletPortrait -> TabletPortraitRegisterScreen(
+                    state = state,
+                    onAction = onAction,
+                )
+
+                ScreenOrientation.Landscape -> LandscapeRegisterScreen(
+                    state = state,
+                    onAction = onAction,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhonePortraitRegisterScreen(
+    state: RegisterViewState,
+    onAction: (RegisterAction) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .background(color = NoteMarkTheme.color.surfaceLowest)
+            .padding(NoteMarkTheme.offset.medium)
+    ) {
+        Title()
+        Spacer(Modifier.height(NoteMarkTheme.offset.average))
+        RegisterForm(
+            state = state,
+            onAction = onAction
+        )
+    }
+}
+
+@Composable
+private fun LandscapeRegisterScreen(
+    state: RegisterViewState,
+    onAction: (RegisterAction) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .background(color = NoteMarkTheme.color.surfaceLowest)
+            .padding(NoteMarkTheme.offset.medium)
+    ) {
+        Title(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = NoteMarkTheme.offset.great)
+        )
+        Spacer(Modifier.width(NoteMarkTheme.offset.average))
+        RegisterForm(
+            modifier = Modifier.weight(1f),
+            state = state,
+            onAction = onAction
+        )
+    }
+}
+
+@Composable
+private fun TabletPortraitRegisterScreen(
+    state: RegisterViewState,
+    onAction: (RegisterAction) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .background(color = NoteMarkTheme.color.surfaceLowest)
+            .padding(NoteMarkTheme.offset.medium)
+    ) {
+        Title(
+            modifier = Modifier
+                .weight(1f)
+                .padding(
+                    start = NoteMarkTheme.offset.great,
+                    top = NoteMarkTheme.offset.large,
+                )
+        )
+        Spacer(modifier = Modifier.width(NoteMarkTheme.offset.average))
+        RegisterForm(
+            modifier = Modifier.weight(1f),
+            state = state,
+            onAction = onAction
+        )
+    }
+}
+
+@Composable
+private fun Title(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
+    ) {
+        Text(
+            text = stringResource(R.string.create_account),
+            style = NoteMarkTheme.typography.titleLarge
+        )
+        Text(
+            text = stringResource(R.string.capture_your_thoughts_and_ideas),
+            style = NoteMarkTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Composable
+private fun RegisterForm(
+    modifier: Modifier = Modifier,
+    state: RegisterViewState,
+    onAction: (RegisterAction) -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(NoteMarkTheme.offset.tiny),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        NoteMarkTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.username.value,
+            label = stringResource(R.string.username),
+            placeholder = "John.doe",
+            supportingText = state.username.error?.asString() ?: "",
+            isError = state.username.error != null,
+            onValueChange = { onAction(RegisterAction.OnUserNameChanged(it)) },
+        )
+        NoteMarkTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.email.value,
+            label = stringResource(R.string.email),
+            placeholder = "john.doe@example.com",
+            supportingText = state.email.error?.asString() ?: "",
+            isError = state.email.error != null,
+            onValueChange = { onAction(RegisterAction.OnEmailChanged(it)) },
+        )
+        NoteMarkTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.password.value,
+            label = stringResource(R.string.password),
+            placeholder = stringResource(R.string.password),
+            supportingText = state.password.error?.asString() ?: "",
+            isError = state.password.error != null,
+            isPassword = true,
+            onValueChange = { onAction(RegisterAction.OnPassChanged(it)) },
+        )
+        NoteMarkTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.repeatPassword.value,
+            label = stringResource(R.string.repeat_password),
+            placeholder = stringResource(R.string.password),
+            supportingText = state.repeatPassword.error?.asString() ?: "",
+            isError = state.repeatPassword.error != null,
+            isPassword = true,
+            onValueChange = { onAction(RegisterAction.OnPassRepeatChanged(it)) },
+        )
+        NoteMarkPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.login),
+            enabled = state.loginEnabled,
+            onClick = { onAction(RegisterAction.OnCreateAccount) },
+        )
+        Spacer(modifier = Modifier.height(NoteMarkTheme.offset.medium))
+        NoteMarkClickableText(
+            text = stringResource(R.string.already_have_an_account),
+            onClick = { onAction(RegisterAction.OnLogin) },
+        )
+    }
+}
+
+@ScreenSizesPreview
+@Composable
+private fun CreateAccountScreenPreview() {
+    NoteMarkTheme {
+        RegisterScreen(
+            state = RegisterViewState.Initial,
+            onAction = {}
+        )
+    }
+}

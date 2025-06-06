@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">NoteMark</string>
+    <string name="your_own_collection_of_notes">Your Own Collection of Notes</string>
+    <string name="capture_your_thoughts_and_ideas">Capture your thoughts and ideas.</string>
+    <string name="get_started">Get Started</string>
+    <string name="login">Log In</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="dont_have_an_account">Don’t have an account?</string>
+    <string name="create_account">Create account</string>
+    <string name="username">Username</string>
+    <string name="repeat_password">Repeat password</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="error_email_invalid">Invalid email provided</string>
+    <string name="error_username_too_short">Username must be at least 3 characters.</string>
+    <string name="error_username_too_long">Username canʼt be longer than 20 characters.</string>
+    <string name="error_password_needs_number_or_symbol">Password must be at least 8 characters and include a number or symbol</string>
+    <string name="error_passwords_dont_match">Passwords do not match</string>
+</resources>
