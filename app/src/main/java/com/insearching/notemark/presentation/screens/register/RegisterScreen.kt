@@ -244,7 +244,6 @@ private fun RegisterForm(
             value = state.email.value,
             label = stringResource(R.string.email),
             placeholder = "john.doe@example.com",
-            supportText = stringResource(R.string.email_support_text),
             errorText = state.email.error?.asString(),
             onValueChange = { onAction(RegisterAction.OnEmailChanged(it)) },
         )
@@ -253,6 +252,7 @@ private fun RegisterForm(
             value = state.password.value,
             label = stringResource(R.string.password),
             placeholder = stringResource(R.string.password),
+            supportText = stringResource(R.string.password_support_text),
             errorText = state.password.error?.asString(),
             isPassword = true,
             onValueChange = { onAction(RegisterAction.OnPassChanged(it)) },
