@@ -6,9 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.insearching.notemark.presentation.screens.HomeScreen
 import com.insearching.notemark.presentation.screens.landing.LandingScreen
 import com.insearching.notemark.presentation.screens.login.LoginScreenRoot
+import com.insearching.notemark.presentation.screens.note_details.NoteDetailsScreenRoot
+import com.insearching.notemark.presentation.screens.note_list.NoteListScreenRoot
 import com.insearching.notemark.presentation.screens.register.RegisterScreenRoot
 
 @Composable
@@ -41,7 +42,7 @@ fun NoteMarkController(
                 },
                 onLoginSuccess = {
                     controller.popBackStack()
-                    controller.navigate(Route.HomeScreen)
+                    controller.navigate(Route.NoteListScreen)
                 }
             )
         }
@@ -53,8 +54,23 @@ fun NoteMarkController(
                 }
             )
         }
-        composable<Route.HomeScreen> {
-            HomeScreen()
+        composable<Route.NoteListScreen> {
+            NoteListScreenRoot(
+                onAddNote = {
+                    controller.navigate(Route.NoteDetailsScreen())
+                },
+                onEditNote = { note ->
+                    controller.navigate(Route.NoteDetailsScreen(note.id))
+                }
+            )
+        }
+
+        composable<Route.NoteDetailsScreen> {
+            NoteDetailsScreenRoot(
+                onBack = {
+                    controller.popBackStack()
+                }
+            )
         }
     }
 }

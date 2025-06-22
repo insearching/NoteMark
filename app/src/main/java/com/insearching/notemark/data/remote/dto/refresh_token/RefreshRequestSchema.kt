@@ -1,4 +1,4 @@
-package com.insearching.notemark.data.remote.dto
+package com.insearching.notemark.data.remote.dto.refresh_token
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

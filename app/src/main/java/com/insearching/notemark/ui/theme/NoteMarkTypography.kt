@@ -22,6 +22,12 @@ data class NoteMarkTypography(
         fontSize = 32.sp,
         lineHeight = 36.sp
     ),
+    val titleMedium: TextStyle = TextStyle(
+        fontFamily = spaceGrotesk,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        lineHeight = 24.sp
+    ),
     val titleSmall: TextStyle = TextStyle(
         fontFamily = spaceGrotesk,
         fontWeight = FontWeight.Medium,

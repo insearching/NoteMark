@@ -14,6 +14,9 @@ sealed class Route {
     data object RegisterScreen : Route()
 
     @Serializable
-    data object HomeScreen : Route()
+    data object NoteListScreen : Route()
+
+    @Serializable
+    data class NoteDetailsScreen(val id: String? = null) : Route()
 
 }

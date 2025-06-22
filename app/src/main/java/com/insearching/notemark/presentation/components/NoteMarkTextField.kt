@@ -93,7 +93,6 @@ fun NoteMarkTextField(
             singleLine = true,
             shape = NoteMarkTheme.shape.large,
             visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation('*') else VisualTransformation.None,
-
             trailingIcon = {
                 if (isPassword) {
                     val icon =

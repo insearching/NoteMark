@@ -1,13 +1,19 @@
 package com.insearching.notemark.data.remote
 
 import com.insearching.notemark.BuildConfig
-import com.insearching.notemark.data.remote.dto.RefreshRequestSchema
-import com.insearching.notemark.data.remote.dto.RefreshResponseSchema
-import com.insearching.notemark.data.session.SessionStorage
-import com.insearching.notemark.data.session.tokenPair
+import com.insearching.notemark.data.remote.datasource.BASE_URL
+import com.insearching.notemark.data.remote.dto.refresh_token.RefreshRequestSchema
+import com.insearching.notemark.data.remote.dto.refresh_token.RefreshResponseSchema
+import com.insearching.notemark.domain.SessionStorage
+import com.insearching.notemark.domain.model.userToken
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.RedirectResponseException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -18,10 +24,12 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 
@@ -35,6 +43,11 @@ object HttpClientFactory {
             install(ContentNegotiation) {
                 json(Json { isLenient = true; ignoreUnknownKeys = true })
             }
+            install(HttpTimeout) {
+                connectTimeoutMillis = 5_000
+                requestTimeoutMillis = 5_000
+                socketTimeoutMillis = 5_000
+            }
             install(DefaultRequest) {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
             }
@@ -44,7 +57,7 @@ object HttpClientFactory {
             install(Auth) {
                 bearer {
                     loadTokens {
-                        val tokenPair = sessionStorage.get()
+                        val tokenPair = sessionStorage.getUserToken()
                         BearerTokens(
                             accessToken = tokenPair?.accessToken ?: "",
                             refreshToken = tokenPair?.refreshToken ?: ""
@@ -53,11 +66,11 @@ object HttpClientFactory {
 
                     refreshTokens {
                         // 1. Retrieve current pair of tokens
-                        val tokenPair = sessionStorage.get()
+                        val tokenPair = sessionStorage.getUserToken()
 
                         // 2. Use refresh token to get new access token
                         val response =
-                            client.post("$BASE_URL/api/auth/refresh") {
+                            client.post("${BASE_URL}/api/auth/refresh") {
                                 contentType(ContentType.Application.Json)
                                 setBody(
                                     RefreshRequestSchema(
@@ -74,7 +87,7 @@ object HttpClientFactory {
                         if (response is Response.Success) {
                             // 3. Update session storage with new pair of tokens
                             val newAuthInfo = response.data
-                            sessionStorage.update(newAuthInfo.tokenPair())
+                            sessionStorage.updateToken(newAuthInfo.userToken(tokenPair?.username ?: ""))
 
                             BearerTokens(
                                 accessToken = newAuthInfo.accessToken,
@@ -87,6 +100,12 @@ object HttpClientFactory {
                             )
                         }
                     }
+                }
+            }
+
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { exception, _ ->
+                    throw handleKtorException(exception)
                 }
             }
 
@@ -111,4 +130,31 @@ object HttpClientFactory {
             }
         }
     }
+
+    private suspend fun handleKtorException(exception: Throwable): Throwable {
+        return when (exception) {
+            is ClientRequestException -> { // 4xx
+                val response = exception.response
+                val body = runCatching { response.bodyAsText() }.getOrNull()
+                KtorClientException("Client error: ${response.status}", body)
+            }
+            is ServerResponseException -> { // 5xx
+                val response = exception.response
+                val body = runCatching { response.bodyAsText() }.getOrNull()
+                KtorServerException("Server error: ${response.status}", body)
+            }
+            is RedirectResponseException -> {
+                KtorRedirectException("Unexpected redirect: ${exception.response.status}")
+            }
+            is IOException -> {
+                NoInternetException("Network error: ${exception.message}")
+            }
+            else -> exception
+        }
+    }
+
+    class KtorClientException(message: String, val body: String?) : Exception(message)
+    class KtorServerException(message: String, val body: String?) : Exception(message)
+    class KtorRedirectException(message: String) : Exception(message)
+    class NoInternetException(message: String) : IOException(message)
 }

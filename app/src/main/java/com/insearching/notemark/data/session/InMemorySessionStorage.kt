@@ -1,11 +1,14 @@
 package com.insearching.notemark.data.session
 
+import com.insearching.notemark.domain.SessionStorage
+import com.insearching.notemark.domain.model.UserToken
+
 class InMemorySessionStorage : SessionStorage {
-    private var tokenPair: TokenPair? = null
+    private var userToken: UserToken? = null
 
-    override fun get(): TokenPair? = tokenPair
+    override suspend fun getUserToken(): UserToken? = userToken
 
-    override fun update(newTokens: TokenPair) {
-        tokenPair = newTokens
+    override suspend fun updateToken(newTokens: UserToken) {
+        userToken = newTokens
     }
 }

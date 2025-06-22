@@ -2,7 +2,11 @@ package com.insearching.notemark
 
 import android.app.Application
 import com.insearching.notemark.di.appModule
+import com.insearching.notemark.di.coroutineModule
+import com.insearching.notemark.di.databaseModule
+import com.insearching.notemark.di.dispatchersModule
 import com.insearching.notemark.di.remoteModule
+import com.insearching.notemark.di.repositoriesModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -17,7 +21,14 @@ class NoteMarkApp : Application() {
             androidContext(this@NoteMarkApp)
             androidLogger()
 
-            modules(appModule, remoteModule)
+            modules(
+                appModule,
+                remoteModule,
+                databaseModule,
+                dispatchersModule,
+                coroutineModule,
+                repositoriesModule,
+            )
         }
 
         if (BuildConfig.DEBUG) {
