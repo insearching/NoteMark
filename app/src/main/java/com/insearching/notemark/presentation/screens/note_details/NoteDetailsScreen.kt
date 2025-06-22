@@ -113,7 +113,7 @@ fun NoteDetailsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(NoteMarkTheme.color.surface)
+            .background(NoteMarkTheme.color.surfaceLowest)
             .imePadding()
             .verticalScroll(scrollState)
     ) {
